@@ -364,7 +364,7 @@ export const setupAuthServer = async ({
       client_secret: provider.upstreamOauthInfo.client_secret,
       code,
       redirect_uri: new URL("/callback", authServerUrl).href,
-      upstream_url: `${provider.upstreamOauthInfo.base_url}/idm/oauth/token`,
+      upstream_url: `${provider.upstreamOauthInfo.base_url}${provider.upstreamOauthInfo.token_endpoint}`,
     });
     if (errResponse) return errResponse;
 
