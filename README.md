@@ -1,0 +1,259 @@
+# MCP Server Template with OAuth & UI
+
+A production-ready template for building Model Context Protocol (MCP) servers with OAuth2 authentication, PostgreSQL storage, and a React UI. Perfect for creating custom MCP integrations with enterprise-grade security and user experience.
+
+## ✨ Features
+
+- 🔐 **OAuth2 Authentication** with PostgreSQL-backed token storage
+- 🌐 **React UI** for interactive tool management
+- 🔌 **Pluggable Tool System** - easily add/remove integrations
+- 🐳 **Docker Ready** with docker-compose setup
+- 📊 **Example Integrations** (Ali Cloud SLS, ClickHouse)
+- 🔄 **Session Management** with resumability support
+- 🏗️ **Monorepo Structure** using pnpm workspaces
+- 📝 **TypeScript** throughout with full type safety
+
+## 🚀 Quick Start
+
+### Prerequisites
+
+- Node.js 20+
+- pnpm 9+
+- PostgreSQL 17+ (or use Docker)
+- Docker & Docker Compose (optional)
+
+### Installation
+
+```bash
+# Clone the repository
+git clone <your-repo-url>
+cd remote-mcp-server-with-ui-template
+
+# Install dependencies
+pnpm install
+
+# Set up environment variables
+cd packages/mcp-server
+cp .env.example .env
+# Edit .env with your configuration
+cp .env.example .env.production
+# Edit .env.production with your configuration, this file will be used when NODE_ENV=production.
+
+# Start PostgreSQL (if not using external database)
+pnpm docker:pg
+
+# Run database migrations
+pnpm db:migrate:dev
+
+# Back to the root directory
+cd ../../
+# Start the mcp development server
+pnpm dev
+
+# In another terminal, start the UI
+pnpm dev:ui
+
+# Or start both by running:
+pnpm dev:all
+```
+
+The server will be available at:
+
+- **MCP Server**: http://localhost:8788/mcp
+- **React UI**: http://localhost:3001/ui
+- **Health Check**: http://localhost:8788/health
+
+## 📁 Project Structure
+
+```
+remote-mcp-server-with-ui-template/
+├── packages/
+│   ├── mcp-server/          # MCP server implementation
+│   │   ├── src/
+│   │   │   ├── index.ts     # Main server entry point
+│   │   │   ├── provider/    # OAuth provider implementation
+│   │   │   ├── tools/       # MCP tools (pluggable)
+│   │   │   ├── stores/      # Database storage
+│   │   │   └── routers/     # Express routers
+│   │   └── prisma/          # Database schema and migrations
+│   └── ui/                  # React UI application
+│       └── src/
+│           ├── pages/       # UI pages
+│           └── components/  # Reusable components
+├── docker/                  # Docker configuration
+├── .env.example            # Environment variables template
+└── README.md
+```
+
+## 🔧 Configuration
+
+### Environment Variables
+
+Copy `.env.example` to `.env` and edit the variables.
+
+### OAuth 2.0 Authentication
+
+Configure `UPSTREAM_OAUTH_*` variables to integrate with an external OAuth provider. The server will:
+
+1. Redirect users to your OAuth provider
+2. Handle the callback
+3. Issue its own access tokens
+4. Store tokens in PostgreSQL
+
+## 🛠️ Adding Custom Tools
+
+### 1. Create a Tool
+
+Create a new file in `packages/mcp-server/src/tools/your-tool/`:
+
+```typescript
+import z from "zod";
+import { ToolType } from "../types";
+
+const myTool: ToolType<typeof paramsSchema> = {
+  name: "my-tool",
+  description: "Description of what this tool does",
+  paramsSchemaOrAnnotations: {
+    param1: z.string().describe("Parameter description"),
+  },
+  callback: async ({ param1 }) => {
+    // Your tool logic here
+    return {
+      content: [
+        {
+          type: "text",
+          text: `Result: ${param1}`,
+        },
+      ],
+    };
+  },
+};
+
+export default myTool;
+```
+
+### 2. Register the Tool
+
+Add to `packages/mcp-server/src/tools/index.ts`:
+
+```typescript
+import myTool from "./your-tool";
+
+const toolsList = [...otherTools, myTool];
+```
+
+## 📦 Example Integrations
+
+### Ali Cloud SLS
+
+Query logs from Alibaba Cloud Simple Log Service.
+
+- See `packages/mcp-server/src/tools/ali/index.ts`
+
+### ClickHouse
+
+Execute queries on ClickHouse databases.
+
+- See `packages/mcp-server/src/tools/clickhouse/index.ts`
+
+## 🐳 Docker Deployment
+
+### Development with Docker Compose
+
+```bash
+# Start all services
+pnpm docker:up
+
+# Stop all services
+pnpm docker:down
+```
+
+### Production Build
+
+Run database migrations as a separate step (from CI/host), then build and run the app container.
+
+```bash
+# 1) Run database migrations (prod)
+pnpm dlx dotenv-cli -e packages/mcp-server/.env.production -- pnpm --filter mcp-server db:migrate:deploy
+
+# 2) Build Docker image
+docker build -f docker/Dockerfile -t mcp-server .
+
+# 3) Run container
+docker run -p 8788:8788 mcp-server
+```
+
+## 📚 Available Scripts
+
+### Root Level
+
+- `pnpm dev` - Start MCP server in development mode
+- `pnpm dev:ui` - Start UI development server
+- `pnpm dev:all` - Start both server and UI concurrently
+- `pnpm build` - Build all packages for production
+- `pnpm type-check` - Run TypeScript type checking
+
+### Database
+
+- `pnpm db:generate` - Generate Prisma client
+- `pnpm db:migrate:dev` - Run migrations in development
+- `pnpm db:migrate:deploy` - Run migrations in production
+- `pnpm db:studio` - Open Prisma Studio
+
+### Docker
+
+- `pnpm docker:pg` - Start PostgreSQL in Docker
+- `pnpm docker:up` - Start all services with docker-compose
+- `pnpm docker:down` - Stop all services
+
+## 🧪 Development
+
+### Database Schema Changes
+
+```bash
+# Edit prisma/schema.prisma
+# Create migration
+pnpm db:migrate:dev --name your_migration_name
+```
+
+### UI Development
+
+The UI is built with:
+
+- React 18
+- React Router
+- Tailwind CSS
+- shadcn/ui components
+
+UI runs on port 3001 in development and is bundled with the server in production.
+
+## 📖 MCP Protocol
+
+This server implements the Model Context Protocol (MCP), allowing AI assistants to:
+
+- Discover available tools
+- Execute tools with parameters
+- Access resources
+- Use prompts
+
+Learn more at [Model Context Protocol Documentation](https://modelcontextprotocol.io).
+
+## 🤝 Contributing
+
+Contributions are welcome! Please:
+
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Add tests if applicable
+5. Submit a pull request
+
+## 📄 License
+
+MIT License - see LICENSE file for details
+
+## 🙋 Support
+
+- Open an issue for bug reports
+- Start a discussion for feature requests
+- Check existing issues before creating new ones

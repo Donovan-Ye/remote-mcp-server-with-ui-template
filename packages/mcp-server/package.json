@@ -1,0 +1,73 @@
+{
+  "name": "mcp-server",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "packageManager": "pnpm@9.15.0",
+  "main": "./dist/cjs/index.cjs",
+  "module": "./dist/esm/index.js",
+  "types": "./dist/esm/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/esm/index.js",
+      "require": "./dist/cjs/index.cjs",
+      "types": "./dist/esm/index.d.ts"
+    },
+    "./tools/*": {
+      "import": "./dist/esm/tools/*.js",
+      "require": "./dist/cjs/tools/*.cjs",
+      "types": "./dist/esm/tools/*.d.ts"
+    }
+  },
+  "scripts": {
+    "dev": "nodemon --exec tsx src/index.ts",
+    "dev:prod": "NODE_ENV=production nodemon --exec tsx src/index.ts",
+    "dev:tsx": "tsx src/index.ts",
+    "clean": "rm -rf dist",
+    "prebuild": "npm run clean",
+    "build": "NODE_ENV=production rollup -c",
+    "build:esm": "NODE_ENV=production tsc -p tsconfig.esm.json",
+    "build:cjs": "NODE_ENV=production tsc -p tsconfig.cjs.json",
+    "build:dual": "npm run build:esm && npm run build:cjs",
+    "build:watch": "rollup -c --watch",
+    "type-check": "tsc --noEmit",
+    "db:generate": "prisma generate",
+    "db:migrate:dev": "prisma migrate dev",
+    "db:migrate:deploy": "prisma migrate deploy",
+    "db:migrate:reset": "prisma migrate reset",
+    "db:push": "prisma db push",
+    "db:studio": "prisma studio"
+  },
+  "dependencies": {
+    "@alicloud/openapi-client": "^0.4.15",
+    "@alicloud/sls20201230": "^5.7.2",
+    "@clickhouse/client": "^1.12.0",
+    "@clickhouse/client-web": "^1.12.0",
+    "@mcp-ui/server": "^5.10.0",
+    "@modelcontextprotocol/sdk": "1.17.4",
+    "@prisma/client": "^6.1.0",
+    "@types/winston": "^2.4.4",
+    "axios": "^1.11.0",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^5.1.0",
+    "winston": "^3.17.0",
+    "zod": "^3.25.67"
+  },
+  "devDependencies": {
+    "@rollup/plugin-commonjs": "^25.0.0",
+    "@rollup/plugin-json": "^6.0.0",
+    "@rollup/plugin-node-resolve": "^15.0.0",
+    "@rollup/plugin-typescript": "^11.0.0",
+    "@types/cors": "^2.8.19",
+    "@types/express": "^5.0.3",
+    "@types/node": "^24.2.0",
+    "glob": "^10.3.0",
+    "nodemon": "^3.1.10",
+    "prisma": "^6.1.0",
+    "rollup": "^4.0.0",
+    "tslib": "^2.8.1",
+    "tsx": "^4.7.0",
+    "typescript": "5.8.3"
+  }
+}

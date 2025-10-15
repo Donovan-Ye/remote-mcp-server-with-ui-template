@@ -1,0 +1,35 @@
+services:
+  mcp-server:
+    build:
+      context: ..
+      dockerfile: ./docker/Dockerfile
+    ports:
+      - "8788:8788"
+    environment:
+      - POSTGRES_URL=postgres://postgres:postgres@postgres:5432/mcp_server
+      - NODE_ENV=production
+      - MCP_PORT=8788
+    networks:
+      - mcp-network
+    depends_on:
+      - postgres
+    restart: unless-stopped
+
+  postgres:
+    image: postgres:17
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: mcp_server
+    networks:
+      - mcp-network
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+
+networks:
+  mcp-network:
+    driver: bridge
