@@ -1,6 +1,32 @@
-# MCP Server Template with OAuth & UI
+# Remote MCP Server Template with OAuth & UI
 
-A production-ready template for building Model Context Protocol (MCP) servers with OAuth2 authentication, PostgreSQL storage, and a React UI. Perfect for creating custom MCP integrations with enterprise-grade security and user experience.
+A production-ready template for building remote Model Context Protocol (MCP) servers with OAuth2 authentication, PostgreSQL storage, and a React UI. Perfect for creating custom MCP integrations with enterprise-grade security and user experience.
+
+## What's MCP?
+
+MCP (Model Context Protocol) is an open-source standard for connecting AI applications to external systems.
+
+Learn more at [Model Context Protocol Documentation](https://modelcontextprotocol.io).
+
+## What's Remote MCP Servers?
+
+Remote MCP servers extend AI applications’ capabilities beyond your local environment, providing access to internet-hosted tools, services, and data sources. By connecting to remote MCP servers, you transform AI assistants from helpful tools into informed teammates capable of handling complex, multi-step projects with real-time access to external resources.
+
+For example, in Cursor, you can connect to a remote MCP server by adding the following to your Cursor config:
+
+```json
+{
+  "remote-mcp-server": {
+    "url": "http://localhost:8788/mcp"
+  }
+}
+```
+
+Learn more at [Remote MCP Server Documentation](https://modelcontextprotocol.io/docs/develop/connect-remote-servers).
+
+## What's UI capability?
+
+For current MCP protocol, there is no UI capability. But in some usecases, we need to create a UI to interact with the MCP server, that can reduce the chat turns with LLM. So I add a UI capability to the MCP server by using [mcp-ui](https://github.com/idosal/mcp-ui). So the server can return raw html, iframe url, etc. to the client.
 
 ## ✨ Features
 
