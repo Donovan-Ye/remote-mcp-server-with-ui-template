@@ -69,16 +69,19 @@ export async function fetchUpstreamAuthToken({
     }).toString(),
     headers: {
       "Content-Type": "application/x-www-form-urlencoded",
+      "Accept": "application/json",
     },
     method: "POST",
   });
+
   if (!resp.ok) {
     return [null, new Response("Failed to fetch access token", { status: 500 })];
   }
-  const body = await resp.json() as { access_token?: string };
+
+  const body = await resp.json() as { access_token?: string, error_description?: string };
   const accessToken = body?.access_token;
   if (!accessToken) {
-    return [null, new Response("Missing access token", { status: 400 })];
+    return [null, new Response(body.error_description ?? "Missing access token", { status: 400 })];
   }
   return [accessToken, null];
 }

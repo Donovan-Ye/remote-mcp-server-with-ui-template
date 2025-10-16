@@ -11,19 +11,20 @@ import { PrismaTokenStore } from '../../stores/prismaTokenStore';
 import { fetchUpstreamAuthToken, getUpstreamAuthorizeUrl } from './util';
 import console from 'node:console';
 import { authServerUrl } from '../..';
-import { getUserInfo, UserInfo } from '../../apis/sso/api';
 
 const REQUIRED_UPSTREAM_OAUTH_INFO_LIST = [
   'UPSTREAM_OAUTH_CLIENT_ID',
   'UPSTREAM_OAUTH_CLIENT_SECRET',
   "UPSTREAM_OAUTH_BASE_URL",
-  "UPSTREAM_OAUTH_TOKEN_ENDPOINT"
+  "UPSTREAM_OAUTH_AUTHORIZE_ENDPOINT",
+  "UPSTREAM_OAUTH_TOKEN_ENDPOINT",
 ]
 
 interface UpstreamOauthInfo {
   client_id: string;
   client_secret: string;
   base_url: string;
+  authorize_endpoint: string;
   token_endpoint: string;
 }
 
@@ -41,6 +42,7 @@ function validateAndGetUpstreamOauthInfo(): UpstreamOauthInfo {
     client_id: process.env.UPSTREAM_OAUTH_CLIENT_ID!,
     client_secret: process.env.UPSTREAM_OAUTH_CLIENT_SECRET!,
     base_url: process.env.UPSTREAM_OAUTH_BASE_URL!,
+    authorize_endpoint: process.env.UPSTREAM_OAUTH_AUTHORIZE_ENDPOINT!,
     token_endpoint: process.env.UPSTREAM_OAUTH_TOKEN_ENDPOINT!,
   }
 }
@@ -101,7 +103,7 @@ export class PrismaAuthProvider implements OAuthServerProvider {
   ): Promise<void> {
     // Redirect to the upstream OAuth authorize endpoint
     const targetUrl = getUpstreamAuthorizeUrl({
-      upstream_url: this.upstreamOauthInfo.base_url,
+      upstream_url: `${this.upstreamOauthInfo.base_url}${this.upstreamOauthInfo.authorize_endpoint}`,
       client_id: this.upstreamOauthInfo.client_id,
       scope: 'all',
       redirect_uri: new URL("/callback", authServerUrl).href,
@@ -260,8 +262,12 @@ export class PrismaAuthProvider implements OAuthServerProvider {
     await this.prisma.$disconnect();
   }
 
-  async completeAuthorization({ client, params, code, userInfo }: {
-    client: OAuthClientInformationFull, params: AuthorizationParams, code: string, userInfo: UserInfo
+  async completeAuthorization({
+    client, params, code
+  }: {
+    client: OAuthClientInformationFull,
+    params: AuthorizationParams,
+    code: string,
   }): Promise<{ redirectTo: string }> {
     await this.tokenStore.storeAuthorizationCode(code, client, params);
 
@@ -366,31 +372,20 @@ export const setupAuthServer = async ({
       redirect_uri: new URL("/callback", authServerUrl).href,
       upstream_url: `${provider.upstreamOauthInfo.base_url}${provider.upstreamOauthInfo.token_endpoint}`,
     });
-    if (errResponse) return errResponse;
-
-    // Fetch the user info from SSO
-    const userInfo = await getUserInfo(accessToken);
+    if (errResponse) {
+      return res.status(errResponse.status).send(await errResponse.text());
+    }
 
     // Return back to the MCP client a new token
     const { redirectTo } = await provider.completeAuthorization({
       client,
       params,
       code,
-      userInfo,
     });
 
     res.redirect(redirectTo);
     return;
   });
-
-  // Start the auth server
-  // authApp.listen(auth_port, (error) => {
-  //   if (error) {
-  //     console.error('Failed to start server:', error);
-  //     process.exit(1);
-  //   }
-  //   console.log(`OAuth Authorization Server listening on port ${auth_port}`);
-  // });
 
   // Note: we could fetch this from the server, but then we end up
   // with some top level async which gets annoying.
