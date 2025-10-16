@@ -100,6 +100,53 @@ Configure `UPSTREAM_OAUTH_*` variables to integrate with an external OAuth provi
 3. Issue its own access tokens
 4. Store tokens in PostgreSQL
 
+#### Example: GitHub OAuth2
+
+Here's how to set up GitHub as your OAuth provider:
+
+**1. Create a GitHub OAuth App**
+
+Go to [GitHub Developer Settings](https://github.com/settings/developers) → OAuth Apps → New OAuth App
+
+- **Application name**: Your MCP Server
+- **Homepage URL**: `http://localhost:8788` (or your production URL)
+- **Authorization callback URL**: `http://localhost:8788/callback`
+
+After creating, you'll get a **Client ID** and can generate a **Client Secret**.
+
+**2. Configure Environment Variables**
+
+Edit your `.env` file:
+
+```bash
+# OAuth Configuration
+UPSTREAM_OAUTH_CLIENT_ID=your_github_client_id
+UPSTREAM_OAUTH_CLIENT_SECRET=your_github_client_secret
+UPSTREAM_OAUTH_BASE_URL=https://github.com
+UPSTREAM_OAUTH_AUTHORIZE_ENDPOINT=/login/oauth/authorize
+UPSTREAM_OAUTH_TOKEN_ENDPOINT=/login/oauth/access_token
+```
+
+**3. How it Works**
+
+The OAuth flow:
+
+1. User initiates authentication through your MCP client
+2. Server redirects to `https://github.com/login/oauth/authorize`
+3. User authorizes on GitHub
+4. GitHub redirects back to your `/callback` endpoint with a code
+5. Server exchanges code for GitHub access token at `https://github.com/login/oauth/access_token`
+6. Server issues its own access token
+7. Token stored in PostgreSQL for future requests
+
+**4. Other OAuth Providers**
+
+You can use any OAuth2-compliant provider by adjusting the environment variables:
+
+- **Google**: `https://accounts.google.com`
+- **GitLab**: `https://gitlab.com`
+- **Custom**: Your organization's OAuth server
+
 ## 🛠️ Adding Custom Tools
 
 ### 1. Create a Tool
