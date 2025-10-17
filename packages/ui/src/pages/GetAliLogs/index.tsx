@@ -6,8 +6,12 @@ import { useForm, FormProvider } from 'react-hook-form';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { DateTimePicker } from '@/components/ui/date-time-picker';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
-import { getProjects, getLogstores } from '@/apis/ali';
+import { getProjects, getLogstores, getLogs } from '@/apis/ali';
 import { AliyunProject } from '@/apis/ali/types';
+import { Card } from '@/components/ui/card';
+import { cn } from '@/lib/utils';
+import usePageAlone from '@/hooks/usePageAlone';
+import LogViewer from './components/LogViewer';
 
 const requests = new Set<string>();
 
@@ -25,10 +29,13 @@ interface LogFormValues {
 }
 
 const GetAliLogs: React.FC = () => {
+  const { pageAlone } = usePageAlone();
+  const [logs, setLogs] = useState<string[]>([]);
   const [projects, setProjects] = useState<AliyunProject[]>([]);
   const [logstores, setLogstores] = useState<string[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
+  const [isCollapsed, setIsCollapsed] = useState<boolean>(false);
 
   const methods = useForm<LogFormValues>({
     defaultValues: {
@@ -54,7 +61,7 @@ const GetAliLogs: React.FC = () => {
         setProjects(projectsData.body.projects || []);
         setLoading(false);
       } catch (err) {
-        setError('获取项目列表失败');
+        setError('Failed to fetch project list');
         setLoading(false);
       }
     };
@@ -77,7 +84,7 @@ const GetAliLogs: React.FC = () => {
         setLogstores(logstoresList);
         setLoading(false);
       } catch (err) {
-        setError(`获取项目 ${selectedProject} 的日志库列表失败`);
+        setError(`Failed to fetch logstores for project ${selectedProject}`);
         setLoading(false);
       }
     };
@@ -91,33 +98,37 @@ const GetAliLogs: React.FC = () => {
       setError(null);
 
       const { projectName, logstoreName, ...params } = data;
-      // const response = await getLogs(projectName, logstoreName, params);
+      if (pageAlone) {
+        const response = await getLogs(projectName, logstoreName, params);
 
-      // setLogs(response.body || []);
-      const messageId = crypto.randomUUID();
+        setLogs(response.body || []);
+      } else {
+        const messageId = crypto.randomUUID();
 
-      // Store a callback to handle the response for this specific request.
-      requests.add(messageId);
+        // Store a callback to handle the response for this specific request.
+        requests.add(messageId);
 
-      // Send the request to the host.
-      window.parent.postMessage(
-        {
-          type: "Tool",
-          messageId,
-          payload: {
-            requestType: "get-ali-logs",
-            params: {
-              projectName,
-              logstoreName,
-              params,
+        // Send the request to the host.
+        window.parent.postMessage(
+          {
+            type: "Tool",
+            messageId,
+            payload: {
+              requestType: "get-ali-logs",
+              params: {
+                projectName,
+                logstoreName,
+                params,
+              },
             },
           },
-        },
-        "*"
-      );
+          "*"
+        );
+      }
+
       setLoading(false);
     } catch (err) {
-      setError('查询日志失败');
+      setError('Failed to query logs');
       setLoading(false);
     }
   };
@@ -149,106 +160,164 @@ const GetAliLogs: React.FC = () => {
 
   return (
     <div className="container mx-auto p-4 flex flex-col h-full">
-      <h1 className="text-2xl font-bold mb-6">阿里云 SLS 日志查询</h1>
+      <div className="flex items-center justify-between mb-6">
+        <h1 className="text-2xl font-bold">Ali Cloud SLS Log Query</h1>
+        {
+          pageAlone &&
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={() => setIsCollapsed(!isCollapsed)}
+          >
+            {isCollapsed ? 'Expand Query Form ▼' : 'Collapse Query Form ▲'}
+          </Button>
+        }
+        {
+          !pageAlone &&
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={() => window.open(`${window.location.href}&alone=true`, '_blank')}
+          >
+            Open in New Tab
+          </Button>
+        }
+      </div>
       {error && (
-        <div className="mt-4 p-4 bg-red-100 text-red-700 rounded-md">
+        <div className="my-4 p-4 bg-red-100 text-red-700 rounded-md">
           {error}
         </div>
       )}
 
       <FormProvider {...methods}>
-        <form onSubmit={methods.handleSubmit(handleSubmit)} style={{ minHeight: 0 }} className="space-y-4 flex-1 flex flex-col">
-          <div className="flex-1 min-h-0 overflow-y-auto space-y-4">
-            <FormField
-              name="projectName"
-              rules={{ required: "项目名称为必填项" }}
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>项目名称</FormLabel>
-                  <FormControl>
-                    <Select
-                      onValueChange={field.onChange}
-                      defaultValue={field.value}
-                    >
-                      <SelectTrigger className="w-full">
-                        <SelectValue placeholder="请选择项目" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {projects.map((project) => {
-                          const displayText = `${project.projectName}${project.description ? ` (${project.description})` : ''}`;
-                          return (
-                            <SelectItem key={project.projectName} value={project.projectName}>
+        <form onSubmit={methods.handleSubmit(handleSubmit)} className={cn("space-y-4 min-h-0 flex flex-col", {
+          "flex-1": !isCollapsed
+        })}>
+          {!isCollapsed && (
+            <div className="flex-1 min-h-0 overflow-y-auto space-y-4">
+              <FormField
+                name="projectName"
+                rules={{ required: "Project name is required" }}
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Project Name</FormLabel>
+                    <FormControl>
+                      <Select
+                        onValueChange={field.onChange}
+                        defaultValue={field.value}
+                      >
+                        <SelectTrigger className="w-full">
+                          <SelectValue placeholder="Select a project" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {projects.map((project) => {
+                            const displayText = `${project.projectName}${project.description ? ` (${project.description})` : ''}`;
+                            return (
+                              <SelectItem key={project.projectName} value={project.projectName}>
+                                <Tooltip>
+                                  <TooltipTrigger asChild>
+                                    <span className="block truncate max-w-[400px]">
+                                      {displayText}
+                                    </span>
+                                  </TooltipTrigger>
+                                  <TooltipContent>
+                                    <p>{displayText}</p>
+                                  </TooltipContent>
+                                </Tooltip>
+                              </SelectItem>
+                            );
+                          })}
+                        </SelectContent>
+                      </Select>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                name="logstoreName"
+                rules={{ required: "Logstore name is required" }}
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Logstore Name</FormLabel>
+                    <FormControl>
+                      <Select
+                        onValueChange={field.onChange}
+                        defaultValue={field.value}
+                        disabled={!selectedProject || logstores.length === 0}
+                      >
+                        <SelectTrigger className="w-full">
+                          <SelectValue placeholder="Please select a project first" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {logstores.map((logstore) => (
+                            <SelectItem key={logstore} value={logstore}>
                               <Tooltip>
                                 <TooltipTrigger asChild>
                                   <span className="block truncate max-w-[400px]">
-                                    {displayText}
+                                    {logstore}
                                   </span>
                                 </TooltipTrigger>
                                 <TooltipContent>
-                                  <p>{displayText}</p>
+                                  <p>{logstore}</p>
                                 </TooltipContent>
                               </Tooltip>
                             </SelectItem>
-                          );
-                        })}
-                      </SelectContent>
-                    </Select>
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
-            <FormField
-              name="logstoreName"
-              rules={{ required: "日志库名称为必填项" }}
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>日志库名称</FormLabel>
-                  <FormControl>
-                    <Select
-                      onValueChange={field.onChange}
-                      defaultValue={field.value}
-                      disabled={!selectedProject || logstores.length === 0}
-                    >
-                      <SelectTrigger className="w-full">
-                        <SelectValue placeholder="请先选择项目" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {logstores.map((logstore) => (
-                          <SelectItem key={logstore} value={logstore}>
-                            <Tooltip>
-                              <TooltipTrigger asChild>
-                                <span className="block truncate max-w-[400px]">
-                                  {logstore}
-                                </span>
-                              </TooltipTrigger>
-                              <TooltipContent>
-                                <p>{logstore}</p>
-                              </TooltipContent>
-                            </Tooltip>
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <FormField
+                  name="from"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Start Time</FormLabel>
+                      <FormControl>
+                        <DateTimePicker
+                          value={field.value}
+                          onChange={field.onChange}
+                          placeholder="Select start date and time"
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <FormField
+                  name="to"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>End Time</FormLabel>
+                      <FormControl>
+                        <DateTimePicker
+                          value={field.value}
+                          onChange={field.onChange}
+                          placeholder="Select end date and time"
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+
               <FormField
-                name="from"
+                name="query"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>开始时间</FormLabel>
+                    <FormLabel>Query Statement</FormLabel>
                     <FormControl>
-                      <DateTimePicker
-                        value={field.value}
-                        onChange={field.onChange}
-                        placeholder="选择开始日期和时间"
-                      />
+                      <Input {...field} className="w-full" />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -256,98 +325,65 @@ const GetAliLogs: React.FC = () => {
               />
 
               <FormField
-                name="to"
+                name="topic"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>结束时间</FormLabel>
+                    <FormLabel>Log Topic</FormLabel>
                     <FormControl>
-                      <DateTimePicker
-                        value={field.value}
-                        onChange={field.onChange}
-                        placeholder="选择结束日期和时间"
-                      />
+                      <Input {...field} className="w-full" />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
               />
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <FormField
+                  name="line"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Lines to Return</FormLabel>
+                      <FormControl>
+                        <Input {...field} type="number" className="w-full" />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  name="offset"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Offset</FormLabel>
+                      <FormControl>
+                        <Input {...field} type="number" className="w-full" />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
             </div>
-
-            <FormField
-              name="query"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>查询语句</FormLabel>
-                  <FormControl>
-                    <Input {...field} className="w-full" />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              name="topic"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>日志主题</FormLabel>
-                  <FormControl>
-                    <Input {...field} className="w-full" />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <FormField
-                name="line"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>返回行数</FormLabel>
-                    <FormControl>
-                      <Input {...field} type="number" className="w-full" />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                name="offset"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>偏移量</FormLabel>
-                    <FormControl>
-                      <Input {...field} type="number" className="w-full" />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
-          </div>
-
+          )}
 
           <Button
             type="submit"
             className="w-full"
             disabled={loading}
           >
-            {loading ? '查询中...' : '查询日志'}
+            {loading ? 'Querying...' : 'Query Logs'}
           </Button>
         </form>
       </FormProvider>
 
 
-      {/* {logs.length > 0 && (
-        <Card className="mt-6 p-4">
-          <h2 className="text-xl font-semibold mb-4">日志结果</h2>
-          <div className="overflow-auto max-h-96">
-            <pre className="whitespace-pre-wrap">{JSON.stringify(logs, null, 2)}</pre>
-          </div>
+      {logs.length > 0 && (
+        <Card className="mt-6 p-4 min-h-0 flex-1 flex flex-col">
+          <h2 className="text-xl font-semibold mb-4">Log Results</h2>
+          <LogViewer logs={logs} />
         </Card>
-      )} */}
+      )}
     </div>
   );
 };
