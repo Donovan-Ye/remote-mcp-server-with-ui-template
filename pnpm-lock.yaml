@@ -33,8 +33,8 @@ importers:
         specifier: ^5.10.0
         version: 5.11.0
       '@modelcontextprotocol/sdk':
-        specifier: 1.17.4
-        version: 1.17.4
+        specifier: 1.20.1
+        version: 1.20.1
       '@prisma/client':
         specifier: ^6.1.0
         version: 6.16.2(prisma@6.16.2(typescript@5.8.3))(typescript@5.8.3)
@@ -707,8 +707,8 @@ packages:
   '@mcp-ui/server@5.11.0':
     resolution: {integrity: sha512-DLakzSNA17XsViC+YYQxy2ViVtdJu0SDxQeAIviguXFq58qACvDC5tMFTNn2c0vMB5qfXqz0HLZImE3hHd3C8g==}
 
-  '@modelcontextprotocol/sdk@1.17.4':
-    resolution: {integrity: sha512-zq24hfuAmmlNZvik0FLI58uE5sriN0WWsQzIlYnzSuKDAHFqJtBFrl/LfB1NLgJT5Y7dEBzaX4yAKqOPrcetaw==}
+  '@modelcontextprotocol/sdk@1.20.1':
+    resolution: {integrity: sha512-j/P+yuxXfgxb+mW7OEoRCM3G47zCTDqUPivJo/VzpjbG8I9csTXtOprCf5FfOfHK4whOJny0aHuBEON+kS7CCA==}
     engines: {node: '>=18'}
 
   '@pkgjs/parseargs@0.11.0':
@@ -3386,11 +3386,11 @@ snapshots:
 
   '@mcp-ui/server@5.11.0':
     dependencies:
-      '@modelcontextprotocol/sdk': 1.17.4
+      '@modelcontextprotocol/sdk': 1.20.1
     transitivePeerDependencies:
       - supports-color
 
-  '@modelcontextprotocol/sdk@1.17.4':
+  '@modelcontextprotocol/sdk@1.20.1':
     dependencies:
       ajv: 6.12.6
       content-type: 1.0.5

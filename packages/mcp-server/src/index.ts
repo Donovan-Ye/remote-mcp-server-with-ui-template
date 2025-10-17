@@ -179,7 +179,6 @@ app.get('/ready', (req, res) => {
 	});
 });
 
-
 // Set up OAuth if enabled
 let authMiddleware: RequestHandler | null = null;
 
@@ -239,14 +238,6 @@ async function initializeOAuth() {
 
 		// Set up UI router
 		setupUiRouter(app, tokenVerifier);
-
-		// Add metadata routes to the main MCP server
-		app.use(mcpAuthMetadataRouter({
-			oauthMetadata,
-			resourceServerUrl: mcpServerUrl,
-			scopesSupported: ['mcp:tools'],
-			resourceName: 'MCP Demo Server',
-		}));
 
 		authMiddleware = requireBearerAuth({
 			verifier: tokenVerifier,

@@ -44,7 +44,7 @@
     "@clickhouse/client": "^1.12.0",
     "@clickhouse/client-web": "^1.12.0",
     "@mcp-ui/server": "^5.10.0",
-    "@modelcontextprotocol/sdk": "1.17.4",
+    "@modelcontextprotocol/sdk": "1.20.1",
     "@prisma/client": "^6.1.0",
     "@types/winston": "^2.4.4",
     "axios": "^1.11.0",

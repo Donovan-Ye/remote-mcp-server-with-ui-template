@@ -295,14 +295,6 @@ export const setupAuthServer = async ({
   mcpServerUrl: URL,
   strictResource: boolean
 }): Promise<OAuthMetadata> => {
-  // Create separate auth server app
-  // NOTE: This is a separate app on a separate port to illustrate
-  // how to separate an OAuth Authorization Server from a Resource
-  // server in the SDK. The SDK is not intended to be provide a standalone
-  // authorization server.
-
-  const auth_port = authServerUrl.port;
-
   const validateResource = strictResource ? (resource?: URL) => {
     if (!resource) return false;
     const expectedResource = resourceUrlFromServerUrl(mcpServerUrl);
