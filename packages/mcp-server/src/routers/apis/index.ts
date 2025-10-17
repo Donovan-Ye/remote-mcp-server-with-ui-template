@@ -3,7 +3,12 @@ import aliRouter from "./ali";
 
 const apiRouter = Router();
 apiRouter.use("/ali", aliRouter);
+const isDev = process.env.NODE_ENV === 'development';
 
 export const setupApisRouter = (app: express.Application, middleware: express.RequestHandler) => {
-  app.use("/api", middleware, apiRouter);
+  if (isDev) {
+    app.use("/api", apiRouter);
+  } else {
+    app.use("/api", middleware, apiRouter);
+  }
 }
