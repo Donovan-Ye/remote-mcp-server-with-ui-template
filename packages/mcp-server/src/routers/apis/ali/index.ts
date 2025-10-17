@@ -1,21 +1,15 @@
 import { Router } from 'express';
-import { createRequire } from 'module';
-import { aliGlobalTryCatch } from '../../../tools/ali/utils';
-
-const requireCJS = createRequire(import.meta.url);
+import { MockSls, MockAliClient } from '../../../tools/ali/mockData';
 
 const aliRouter = Router();
 
 // Get all projects
 aliRouter.get('/projects', async (req, res) => {
   try {
-    const result = await aliGlobalTryCatch(async (client) => {
-      const $Sls = requireCJS('@alicloud/sls20201230');
-      let listProjectRequest = new $Sls.ListProjectRequest({});
-      const listProjectResponse = await client.listProject(listProjectRequest);
-      return listProjectResponse;
-    });
-    res.json(result);
+    const client = new MockAliClient();
+    let listProjectRequest = new MockSls.ListProjectRequest({});
+    const listProjectResponse = await client.listProject(listProjectRequest);
+    res.json(listProjectResponse);
   } catch (error: any) {
     res.status(500).json({ error: error.message });
   }
@@ -30,15 +24,12 @@ aliRouter.get('/projects/:projectName/logstores', async (req, res) => {
       return res.status(400).json({ error: 'Project name is required' });
     }
 
-    const result = await aliGlobalTryCatch(async (client) => {
-      const $Sls = requireCJS('@alicloud/sls20201230');
-      let listLogstoresRequest = new $Sls.ListLogStoresRequest({
-        project: projectName,
-      });
-      let listLogStoresResponse = await client.listLogStores(projectName, listLogstoresRequest);
-      return listLogStoresResponse;
+    const client = new MockAliClient();
+    let listLogstoresRequest = new MockSls.ListLogStoresRequest({
+      project: projectName,
     });
-    res.json(result);
+    let listLogStoresResponse = await client.listLogStores(projectName, listLogstoresRequest);
+    res.json(listLogStoresResponse);
   } catch (error: any) {
     res.status(500).json({ error: error.message });
   }
@@ -54,29 +45,25 @@ aliRouter.get('/projects/:projectName/logstores/:logstoreName/logs', async (req,
       return res.status(400).json({ error: 'Project name and logstore name are required' });
     }
 
-    const result = await aliGlobalTryCatch(async (client) => {
-      const $Sls = requireCJS('@alicloud/sls20201230');
+    const client = new MockAliClient();
+    const defaultFrom = Math.floor((Date.now() - 3600000) / 1000); // 1 hour ago
+    const defaultTo = Math.floor(Date.now() / 1000); // now
 
-      const defaultFrom = Math.floor((Date.now() - 3600000) / 1000); // 1 hour ago
-      const defaultTo = Math.floor(Date.now() / 1000); // now
-
-      let getLogsRequest = new $Sls.GetLogsRequest({
-        project: projectName,
-        logstore: logstoreName,
-        from: from ? Number(from) : defaultFrom,
-        to: to ? Number(to) : defaultTo,
-        query: query ? String(query) : "*", // Default query to get all logs
-        topic: topic ? String(topic) : "", // Default to empty string
-        line: line ? Number(line) : 100, // Default to 100
-        offset: offset ? Number(offset) : 0, // Default to 0
-        reverse: reverse === 'true', // Default to false
-        powerSql: powerSql === 'true', // Default to false
-      });
-
-      const getLogsResponse = await client.getLogs(projectName, logstoreName, getLogsRequest);
-      return getLogsResponse;
+    let getLogsRequest = new MockSls.GetLogsRequest({
+      project: projectName,
+      logstore: logstoreName,
+      from: from ? Number(from) : defaultFrom,
+      to: to ? Number(to) : defaultTo,
+      query: query ? String(query) : "*", // Default query to get all logs
+      topic: topic ? String(topic) : "", // Default to empty string
+      line: line ? Number(line) : 100, // Default to 100
+      offset: offset ? Number(offset) : 0, // Default to 0
+      reverse: reverse === 'true', // Default to false
+      powerSql: powerSql === 'true', // Default to false
     });
-    res.json(result);
+
+    const getLogsResponse = await client.getLogs(projectName, logstoreName, getLogsRequest);
+    res.json(getLogsResponse);
   } catch (error: any) {
     res.status(500).json({ error: error.message });
   }

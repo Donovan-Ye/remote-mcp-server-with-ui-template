@@ -1,9 +1,7 @@
-import { createRequire } from 'module';
 import z from "zod";
 import { ToolType } from "../../types";
 import { aliGlobalTryCatch } from "../utils";
-
-const requireCJS = createRequire(import.meta.url);
+import { MockSls } from "../mockData";
 
 const paramsSchema = {
   projectName: z.string().optional().describe("Project name. If not provided, will list available projects for selection."),
@@ -24,11 +22,9 @@ const getLogsTool: ToolType<typeof paramsSchema> = {
   paramsSchemaOrAnnotations: paramsSchema,
   callback: async ({ projectName, logstoreName, from, to, query, topic, line, offset, reverse, powerSql }) => {
     return aliGlobalTryCatch(async (client) => {
-      const $Sls = requireCJS('@alicloud/sls20201230');
-
       // If no project specified, list available projects for user to choose
       if (!projectName) {
-        let listProjectRequest = new $Sls.ListProjectRequest({});
+        let listProjectRequest = new MockSls.ListProjectRequest({});
 
         const listProjectResponse = await client.listProject(listProjectRequest);
 
@@ -42,7 +38,7 @@ const getLogsTool: ToolType<typeof paramsSchema> = {
 
       // If project specified but no logstore, list logstores
       if (projectName && !logstoreName) {
-        let listLogstoresRequest = new $Sls.ListLogStoresRequest({
+        let listLogstoresRequest = new MockSls.ListLogStoresRequest({
           project: projectName,
         });
 
@@ -61,7 +57,7 @@ const getLogsTool: ToolType<typeof paramsSchema> = {
         const defaultFrom = Math.floor((Date.now() - 3600000) / 1000); // 1 hour ago
         const defaultTo = Math.floor(Date.now() / 1000); // now
 
-        let getLogsRequest = new $Sls.GetLogsRequest({
+        let getLogsRequest = new MockSls.GetLogsRequest({
           project: projectName,
           logstore: logstoreName,
           from: from || defaultFrom,

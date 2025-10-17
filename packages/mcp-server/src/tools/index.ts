@@ -1,9 +1,7 @@
-// import userInfoTool from "./userInfo";
-import { clickhouseTools } from "./clickhouse";
 import { aliTools } from "./ali";
+import userInfoTool from "./userInfo";
 
-
-const toolsList = [...clickhouseTools, ...aliTools].map(tool => ({
+const toolsList = [...aliTools, userInfoTool].map(tool => ({
   ...tool,
   callback: async (params: any, extra: any) => {
     // Call the original callback with both parameters
@@ -14,7 +12,7 @@ const toolsList = [...clickhouseTools, ...aliTools].map(tool => ({
       result.content.map(item => {
         if (item.type === "text") {
           if (item.text.length > tokenLimit) {
-            item.text = "[为了节约token， 仅截取了前" + tokenLimit + "个字符] \n\n" + item.text.slice(0, tokenLimit);
+            item.text = "[To save tokens, only the first " + tokenLimit + " characters are shown] \n\n" + item.text.slice(0, tokenLimit);
           }
         }
         return item;

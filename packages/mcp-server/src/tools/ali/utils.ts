@@ -1,31 +1,24 @@
-import { createRequire } from 'module';
 import { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
+import { MockAliClient } from "./mockData";
 
-const requireCJS = createRequire(import.meta.url);
-
-// Dynamically import Ali Cloud SDK
-const getSls = async () => {
-  const Sls = requireCJS('@alicloud/sls20201230');
-  const $OpenApi = requireCJS('@alicloud/openapi-client');
-  return { Sls, $OpenApi };
-};
-
-export const createAliClient = async (): Promise<any> => {
+/**
+ * Create a mock Ali Cloud client
+ * This replaces the real Ali Cloud SDK with mock implementation
+ */
+export const createAliClient = async (): Promise<MockAliClient> => {
   try {
-    const { Sls, $OpenApi } = await getSls();
-    const config = new $OpenApi.Config({});
-
-    config.accessKeyId = process.env.ALI_AK;
-    config.accessKeySecret = process.env.ALI_SK;
-    config.regionId = 'cn-hangzhou';
-
-    return new Sls.default(config);
+    // Return mock client instead of real Ali Cloud client
+    return new MockAliClient();
   } catch (error) {
-    throw new Error(`Failed to create ali client: ${error}`)
+    throw new Error(`Failed to create mock ali client: ${error}`)
   }
 };
 
-export const aliGlobalTryCatch = async (fn: (client: any) => CallToolResult | Promise<CallToolResult>): Promise<CallToolResult> => {
+/**
+ * Global try-catch wrapper for Ali Cloud operations
+ * Now uses mock client instead of real API calls
+ */
+export const aliGlobalTryCatch = async (fn: (client: MockAliClient) => CallToolResult | Promise<CallToolResult>): Promise<CallToolResult> => {
   try {
     const client = await createAliClient();
     return await fn(client);
@@ -33,7 +26,7 @@ export const aliGlobalTryCatch = async (fn: (client: any) => CallToolResult | Pr
     return {
       content: [{
         type: "text",
-        text: `Error with Ali Cloud SLS: ${error instanceof Error ? error.message : String(error)}`
+        text: `Error with Mock Ali Cloud SLS: ${error instanceof Error ? error.message : String(error)}`
       }]
     };
   }

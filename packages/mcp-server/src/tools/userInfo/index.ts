@@ -1,14 +1,12 @@
-import { getUserInfo } from "../../apis/sso/api";
 import { ToolType } from "../types";
 
 const userInfoTool: ToolType = {
   name: "userInfo",
-  description: "Get user info from SSO",
+  description: "A tool to say hello to the user",
   paramsSchemaOrAnnotations: {},
   callback: async (props) => {
-    // const userInfo = await getUserInfo(props.accessToken);
     return {
-      content: [{ text: "userInfo", type: "text" }],
+      content: [{ text: "Hello!", type: "text" }],
     };
   },
 };
