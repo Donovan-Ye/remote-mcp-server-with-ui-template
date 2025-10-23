@@ -4,7 +4,7 @@ import { createUIResource } from '@mcp-ui/server';
 import { uiServerUrl } from '../../..';
 
 const getLogsTool: ToolType = {
-  name: "ali: get logs (no params)",
+  name: "ali: get logs (no params, with ui page returned)",
   description: "Get logs from Ali Cloud SLS without parameters. Returns a form to select project, logstore, and other parameters.",
   paramsSchemaOrAnnotations: {},
   callback: async () => {
