@@ -5,7 +5,7 @@ A production-ready template for building remote Model Context Protocol (MCP) ser
 Example, or [try it out](http://www.yuanxiangji-mini.cn/) directly:
 
 <p align="center">
-  <img src="https://github.com/user-attachments/assets/29b25d51-f7b2-4d67-ada0-e42fab95fbfd" alt="Demo Video" />
+  <video src="https://github.com/user-attachments/assets/29b25d51-f7b2-4d67-ada0-e42fab95fbfd" />
 </p>
 
 ## What's MCP?
