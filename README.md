@@ -1,6 +1,6 @@
 # Remote MCP Server Template with OAuth & UI
 
-A production-ready template for building remote Model Context Protocol (MCP) servers with OAuth2 authentication, PostgreSQL storage, and a React UI. Perfect for creating custom MCP integrations with enterprise-grade security and user experience.
+A production-ready template for building remote Model Context Protocol (MCP) servers with OAuth2 authentication, PostgreSQL storage, and a React UI(with [MCP UI](https://github.com/idosal/mcp-ui) capability). Perfect for creating custom MCP integrations with enterprise-grade security and user experience.
 
 Example, or [try it out](http://www.yuanxiangji-mini.cn/) directly:
 
