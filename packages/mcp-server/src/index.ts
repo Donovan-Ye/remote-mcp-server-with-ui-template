@@ -142,11 +142,11 @@ const MCP_PORT = process.env.MCP_PORT ? parseInt(process.env.MCP_PORT, 10) : 878
 // This allows OAuth endpoints to be registered directly on the MCP server,
 // eliminating the need to run a separate OAuth server process.
 // This allows proxy/load balancer configurations to work correctly
-const AUTH_PORT = MCP_PORT;
 const SERVER_URL = process.env.SERVER_URL ? process.env.SERVER_URL : `http://localhost`;
-export const mcpServerUrl = new URL(`${SERVER_URL}${AUTH_PORT}/mcp`);
-export const authServerUrl = new URL(`${SERVER_URL}${AUTH_PORT}`);
-export const uiServerUrl = new URL(`${SERVER_URL}${AUTH_PORT}/ui`);
+const rootUrl = new URL(`${SERVER_URL}${MCP_PORT ? `:${MCP_PORT}` : ''}`);
+export const mcpServerUrl = new URL(`${rootUrl}/mcp`);
+export const authServerUrl = new URL(`${rootUrl}`);
+export const uiServerUrl = new URL(`${rootUrl}/ui`);
 
 const app = express();
 app.use(express.json());
