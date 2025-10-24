@@ -6,7 +6,7 @@ services:
     ports:
       - "8788:8788"
     environment:
-      - POSTGRES_URL=postgres://postgres:postgres@postgres:5432/mcp_server
+      - POSTGRES_URL=postgres://your_username:your_password@postgres:5432/mcp_server
       - NODE_ENV=production
       - MCP_PORT=8788
     networks:
@@ -17,6 +17,8 @@ services:
 
   postgres:
     image: postgres:17
+    ports:
+      - "5432:5432"
     environment:
       - POSTGRES_USER=your_username
       - POSTGRES_PASSWORD=your_password
