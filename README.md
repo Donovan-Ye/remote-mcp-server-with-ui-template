@@ -2,6 +2,8 @@
 
 A production-ready template for building remote Model Context Protocol (MCP) servers with OAuth2 authentication, PostgreSQL storage, and a React UI. Perfect for creating custom MCP integrations with enterprise-grade security and user experience.
 
+https://github.com/user-attachments/assets/29b25d51-f7b2-4d67-ada0-e42fab95fbfd
+
 ## What's MCP?
 
 MCP (Model Context Protocol) is an open-source standard for connecting AI applications to external systems.
