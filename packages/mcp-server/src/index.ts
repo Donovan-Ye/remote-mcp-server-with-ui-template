@@ -141,10 +141,8 @@ const MCP_PORT = process.env.MCP_PORT ? parseInt(process.env.MCP_PORT, 10) : 878
 // Using the same port for both the MCP server and the OAuth server.
 // This allows OAuth endpoints to be registered directly on the MCP server,
 // eliminating the need to run a separate OAuth server process.
-
-// In production, don't include port in URLs when using standard HTTPS port (443)
 // This allows proxy/load balancer configurations to work correctly
-const AUTH_PORT = process.env.NODE_ENV === 'production' ? '' : `:${MCP_PORT}`;
+const AUTH_PORT = MCP_PORT;
 const SERVER_URL = process.env.SERVER_URL ? process.env.SERVER_URL : `http://localhost`;
 export const mcpServerUrl = new URL(`${SERVER_URL}${AUTH_PORT}/mcp`);
 export const authServerUrl = new URL(`${SERVER_URL}${AUTH_PORT}`);
