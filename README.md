@@ -2,7 +2,11 @@
 
 A production-ready template for building remote Model Context Protocol (MCP) servers with OAuth2 authentication, PostgreSQL storage, and a React UI. Perfect for creating custom MCP integrations with enterprise-grade security and user experience.
 
-https://github.com/user-attachments/assets/29b25d51-f7b2-4d67-ada0-e42fab95fbfd
+Example, or [try it out](http://www.yuanxiangji-mini.cn/) directly:
+
+<p align="center">
+  <img src="https://github.com/user-attachments/assets/29b25d51-f7b2-4d67-ada0-e42fab95fbfd" alt="Demo Video" />
+</p>
 
 ## What's MCP?
 
