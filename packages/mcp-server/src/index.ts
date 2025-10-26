@@ -137,7 +137,7 @@ const getServer = () => {
 	return server;
 };
 
-const MCP_PORT = process.env.MCP_PORT ? parseInt(process.env.MCP_PORT, 10) : 8788;
+const MCP_PORT = process.env.MCP_PORT ? parseInt(process.env.MCP_PORT, 10) : undefined;
 // Using the same port for both the MCP server and the OAuth server.
 // This allows OAuth endpoints to be registered directly on the MCP server,
 // eliminating the need to run a separate OAuth server process.
