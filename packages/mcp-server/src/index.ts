@@ -22,11 +22,11 @@ import { resolve } from 'path';
 import { setupApisRouter } from './routers/apis';
 
 const rootDir = resolve(process.cwd());
-
 dotenv.config({
-	path: resolve(rootDir, `.env.${process.env.NODE_ENV}`),
+	path: resolve(rootDir, '.env'),
 	override: true,
 });
+
 console.log('POSTGRES_URL:', process.env.POSTGRES_URL);
 
 // Check for OAuth flag

@@ -5,8 +5,8 @@ services:
       dockerfile: ./docker/Dockerfile
     ports:
       - "8788:8788"
-    environment:
-      - POSTGRES_URL=postgres://your_username:your_password@postgres:5432/mcp_server
+    env_file:
+      - .env
     networks:
       - mcp-network
     depends_on:
