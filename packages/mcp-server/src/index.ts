@@ -137,11 +137,7 @@ const getServer = () => {
 	return server;
 };
 
-const MCP_PORT = process.env.MCP_PORT ? parseInt(process.env.MCP_PORT, 10) : undefined;
-// Using the same port for both the MCP server and the OAuth server.
-// This allows OAuth endpoints to be registered directly on the MCP server,
-// eliminating the need to run a separate OAuth server process.
-// This allows proxy/load balancer configurations to work correctly
+const MCP_PORT = process.env.MCP_PORT && process.env.NODE_ENV !== 'production' ? parseInt(process.env.MCP_PORT, 10) : undefined;
 const SERVER_URL = process.env.SERVER_URL ? process.env.SERVER_URL : `http://localhost`;
 const rootUrl = new URL(`${SERVER_URL}${MCP_PORT ? `:${MCP_PORT}` : ''}`);
 export const mcpServerUrl = new URL(`${rootUrl}/mcp`);
@@ -398,7 +394,7 @@ initializeOAuth().then(() => {
 		app.delete('/mcp', mcpDeleteHandler);
 	}
 
-	app.listen(MCP_PORT, (error) => {
+	app.listen(MCP_PORT ?? 80, (error) => {
 		if (error) {
 			winstonLogger.error('Failed to start server', { error: error.message, stack: error.stack });
 			process.exit(1);
