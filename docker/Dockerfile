@@ -21,7 +21,6 @@ RUN pnpm install --frozen-lockfile
 ENV NODE_ENV=production
 
 RUN pnpm db:generate && \
-    pnpm db:migrate:deploy && \
     pnpm build && \
     pnpm prune --prod && \
     apk del python3 make g++
@@ -34,5 +33,7 @@ USER mcp
 EXPOSE 8788
 
 WORKDIR /app/packages/mcp-server
+
+CMD ['pnpm','db:migrate:deploy']
 CMD ["node", "dist/esm/index.js"]
 
