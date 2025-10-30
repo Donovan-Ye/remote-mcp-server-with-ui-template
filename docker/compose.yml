@@ -7,6 +7,10 @@ services:
       - "8788:8788"
     env_file:
       - .env
+    environment:
+      - HTTP_PROXY=host.docker.internal:7890
+      - HTTPS_PROXY=host.docker.internal:7890
+      - NO_PROXY=localhost,127.0.0.1,postgres
     networks:
       - mcp-network
     depends_on:
