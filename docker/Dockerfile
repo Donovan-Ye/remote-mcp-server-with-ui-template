@@ -34,6 +34,5 @@ EXPOSE 8788
 
 WORKDIR /app/packages/mcp-server
 
-CMD ['pnpm','db:migrate:deploy']
-CMD ["node", "dist/esm/index.js"]
+CMD ["sh", "-c", "pnpm db:migrate:deploy && node dist/esm/index.js"]
 
