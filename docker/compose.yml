@@ -3,6 +3,11 @@ services:
     build:
       context: ..
       dockerfile: ./docker/Dockerfile
+      args:
+        - HTTP_PROXY=http://host.docker.internal:7890
+        - HTTPS_PROXY=http://host.docker.internal:7890
+        - ALL_PROXY=http://host.docker.internal:7890
+        - NO_PROXY=localhost,127.0.0.1,postgres,host.docker.internal
     ports:
       - "8788:8788"
     env_file:
