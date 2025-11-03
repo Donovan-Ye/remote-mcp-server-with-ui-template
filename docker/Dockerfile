@@ -1,11 +1,5 @@
 FROM node:20-alpine
 
-# Accept proxy build arguments
-ARG HTTP_PROXY
-ARG HTTPS_PROXY
-ARG ALL_PROXY
-ARG NO_PROXY
-
 WORKDIR /app
 
 # Install system dependencies including Python and build tools
@@ -16,13 +10,6 @@ RUN apk add --no-cache \
     && addgroup --system --gid 1001 nodejs && \
     adduser --system --uid 1001 mcp && \
     corepack enable pnpm
-
-
-# Set proxy environment variables for build
-ENV HTTP_PROXY=${HTTP_PROXY}
-ENV HTTPS_PROXY=${HTTPS_PROXY}
-ENV ALL_PROXY=${ALL_PROXY}
-ENV NO_PROXY=${NO_PROXY}
 
 # Copy all source files
 COPY . .
