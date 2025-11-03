@@ -6,15 +6,20 @@ ARG HTTPS_PROXY
 ARG ALL_PROXY
 ARG NO_PROXY
 
-# Set proxy environment variables for build
+# Set proxy environment variables for build (both uppercase and lowercase)
 ENV HTTP_PROXY=${HTTP_PROXY}
 ENV HTTPS_PROXY=${HTTPS_PROXY}
 ENV ALL_PROXY=${ALL_PROXY}
 ENV NO_PROXY=${NO_PROXY}
+ENV http_proxy=${HTTP_PROXY}
+ENV https_proxy=${HTTPS_PROXY}
+ENV all_proxy=${ALL_PROXY}
+ENV no_proxy=${NO_PROXY}
 
 WORKDIR /app
 
 # Install system dependencies including Python and build tools
+# apk should respect HTTP_PROXY and HTTPS_PROXY environment variables
 RUN apk add --no-cache \
     python3 \
     make \
