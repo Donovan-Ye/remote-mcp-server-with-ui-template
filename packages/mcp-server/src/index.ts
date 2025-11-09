@@ -137,9 +137,60 @@ const getServer = () => {
 	return server;
 };
 
+/**
+ * Check if running on Vercel
+ * Vercel sets VERCEL environment variable to "1" when running on their platform
+ */
+function isVercelEnvironment(): boolean {
+	return process.env.VERCEL === '1' || Boolean(process.env.VERCEL);
+}
+
+/**
+ * Get the server URL based on the environment
+ * - On Vercel: Uses VERCEL_URL with HTTPS protocol
+ * - Otherwise: Uses SERVER_URL env variable or falls back to localhost
+ * 
+ * Vercel provides:
+ * - VERCEL: "1" if running on Vercel
+ * - VERCEL_URL: The deployment URL (e.g., "my-app-abc123.vercel.app") without protocol
+ * - VERCEL_ENV: The environment (production, preview, development)
+ */
+function getServerUrl(): string {
+	const isVercel = isVercelEnvironment();
+	const vercelUrl = process.env.VERCEL_URL;
+
+	if (isVercel && vercelUrl) {
+		// Vercel URLs should use HTTPS (except in development)
+		// VERCEL_URL doesn't include protocol, so we add it
+		const protocol = process.env.VERCEL_ENV === 'development' ? 'http' : 'https';
+		return `${protocol}://${vercelUrl}`;
+	}
+
+	// Fallback to SERVER_URL env variable or localhost
+	return process.env.SERVER_URL || 'http://localhost';
+}
+
 const MCP_PORT = process.env.MCP_PORT && process.env.NODE_ENV !== 'production' ? parseInt(process.env.MCP_PORT, 10) : undefined;
-const SERVER_URL = process.env.SERVER_URL ? process.env.SERVER_URL : `http://localhost`;
-const rootUrl = new URL(`${SERVER_URL}${MCP_PORT ? `:${MCP_PORT}` : ''}`);
+const SERVER_URL = getServerUrl();
+const isVercel = isVercelEnvironment();
+
+// Log environment detection
+if (isVercel) {
+	winstonLogger.info('Detected Vercel environment', {
+		vercelUrl: process.env.VERCEL_URL,
+		vercelEnv: process.env.VERCEL_ENV,
+		serverUrl: SERVER_URL
+	});
+} else {
+	winstonLogger.info('Running in local/self-hosted environment', {
+		serverUrl: SERVER_URL,
+		port: MCP_PORT
+	});
+}
+
+// On Vercel, don't append port (uses default 80/443)
+// Only append port for local development
+const rootUrl = new URL(`${SERVER_URL}${MCP_PORT && !isVercel ? `:${MCP_PORT}` : ''}`);
 export const mcpServerUrl = new URL(`${rootUrl}/mcp`);
 export const authServerUrl = new URL(`${rootUrl}`);
 export const uiServerUrl = new URL(`${rootUrl}/ui`);
@@ -399,11 +450,13 @@ initializeOAuth().then(() => {
 			winstonLogger.error('Failed to start server', { error: error.message, stack: error.stack });
 			process.exit(1);
 		}
-		winstonLogger.info(`MCP Streamable HTTP Server listening on port ${MCP_PORT}`, {
+		winstonLogger.info(`MCP Streamable HTTP Server listening on port ${MCP_PORT ?? (isVercel ? 'default (Vercel)' : 80)}`, {
 			port: MCP_PORT,
+			isVercel,
 			serverUrl: SERVER_URL,
 			mcpUrl: mcpServerUrl.toString(),
 			authUrl: authServerUrl.toString(),
+			uiUrl: uiServerUrl.toString(),
 			oauthEnabled: useOAuth
 		});
 	});
