@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "buildCommand": "pnpm vercel-build",
+  "buildCommand": "pnpm install && pnpm --filter mcp-server db:generate && pnpm --filter mcp-server build && pnpm --filter ui build",
   "installCommand": "pnpm install",
   "framework": null,
   "outputDirectory": "dist/ui",
