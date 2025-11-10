@@ -295,8 +295,8 @@ async function initializeOAuth() {
 	}
 }
 
-// Initialize OAuth asynchronously
-initializeOAuth().then(() => {
+// Initialize OAuth asynchronously and export the app
+const appInitialization = initializeOAuth().then(() => {
 	// Map to store transports by session ID
 	const transports: { [sessionId: string]: StreamableHTTPServerTransport } = {};
 
@@ -488,8 +488,12 @@ initializeOAuth().then(() => {
 	return app;
 }).catch(error => {
 	winstonLogger.error('Failed to initialize OAuth', error);
-	process.exit(1);
+	if (!isVercel) {
+		process.exit(1);
+	}
+	throw error; // Re-throw for Vercel to handle
 });
 
 // Export for Vercel - this will be used by api/index.js
-export default app;
+// Export the Promise that resolves to the initialized app
+export default appInitialization;
