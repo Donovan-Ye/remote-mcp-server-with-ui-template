@@ -1,0 +1,17 @@
+{
+  "version": 2,
+  "buildCommand": "pnpm vercel-build",
+  "installCommand": "pnpm install",
+  "framework": null,
+  "outputDirectory": "dist/ui",
+  "rewrites": [
+    {
+      "source": "/ui/(.*)",
+      "destination": "/ui/$1"
+    },
+    {
+      "source": "/(.*)",
+      "destination": "/api"
+    }
+  ]
+}

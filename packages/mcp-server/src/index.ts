@@ -445,43 +445,51 @@ initializeOAuth().then(() => {
 		app.delete('/mcp', mcpDeleteHandler);
 	}
 
-	app.listen(MCP_PORT ?? 80, (error) => {
-		if (error) {
-			winstonLogger.error('Failed to start server', { error: error.message, stack: error.stack });
-			process.exit(1);
-		}
-		winstonLogger.info(`MCP Streamable HTTP Server listening on port ${MCP_PORT ?? (isVercel ? 'default (Vercel)' : 80)}`, {
-			port: MCP_PORT,
-			isVercel,
-			serverUrl: SERVER_URL,
-			mcpUrl: mcpServerUrl.toString(),
-			authUrl: authServerUrl.toString(),
-			uiUrl: uiServerUrl.toString(),
-			oauthEnabled: useOAuth
-		});
-	});
-
-	// Handle server shutdown
-	process.on('SIGINT', async () => {
-		winstonLogger.info('Shutting down server...');
-
-		// Close all active transports to properly clean up resources
-		for (const sessionId in transports) {
-			try {
-				winstonLogger.info(`Closing transport for session ${sessionId}`);
-				await transports[sessionId].close();
-				delete transports[sessionId];
-			} catch (error) {
-				winstonLogger.error(`Error closing transport for session ${sessionId}`, {
-					error: error instanceof Error ? error.message : error,
-					sessionId
-				});
+	// Only start server if not on Vercel (Vercel uses serverless functions)
+	if (!isVercel) {
+		app.listen(MCP_PORT ?? 80, (error) => {
+			if (error) {
+				winstonLogger.error('Failed to start server', { error: error.message, stack: error.stack });
+				process.exit(1);
 			}
-		}
-		winstonLogger.info('Server shutdown complete');
-		process.exit(0);
-	});
+			winstonLogger.info(`MCP Streamable HTTP Server listening on port ${MCP_PORT ?? 80}`, {
+				port: MCP_PORT,
+				serverUrl: SERVER_URL,
+				mcpUrl: mcpServerUrl.toString(),
+				authUrl: authServerUrl.toString(),
+				uiUrl: uiServerUrl.toString(),
+				oauthEnabled: useOAuth
+			});
+		});
+
+		// Handle server shutdown
+		process.on('SIGINT', async () => {
+			winstonLogger.info('Shutting down server...');
+
+			// Close all active transports to properly clean up resources
+			for (const sessionId in transports) {
+				try {
+					winstonLogger.info(`Closing transport for session ${sessionId}`);
+					await transports[sessionId].close();
+					delete transports[sessionId];
+				} catch (error) {
+					winstonLogger.error(`Error closing transport for session ${sessionId}`, {
+						error: error instanceof Error ? error.message : error,
+						sessionId
+					});
+				}
+			}
+			winstonLogger.info('Server shutdown complete');
+			process.exit(0);
+		});
+	}
+
+	// Export app for Vercel serverless functions
+	return app;
 }).catch(error => {
 	winstonLogger.error('Failed to initialize OAuth', error);
 	process.exit(1);
 });
+
+// Export for Vercel - this will be used by api/index.js
+export default app;

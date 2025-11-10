@@ -14,6 +14,7 @@
     "build": "pnpm --filter mcp-server build && pnpm --filter ui build",
     "build:ui": "pnpm --filter ui build",
     "build:server": "pnpm --filter mcp-server build",
+    "vercel-build": "pnpm install && pnpm db:generate && pnpm build",
     "type-check": "pnpm --filter mcp-server type-check && pnpm --filter ui type-check",
     "docker:pg": "docker run --name mcp-server-pg -e POSTGRES_PASSWORD=your_password -e POSTGRES_USER=your_username -e POSTGRES_DB=mcp_server -p 5432:5432 -d postgres",
     "docker:up": "docker-compose -f docker/compose.yml up -d",
