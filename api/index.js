@@ -10,7 +10,7 @@ async function getApp() {
     console.log('Initializing Express app...');
     try {
       // Import the module - it returns a Promise that resolves to the Express app
-      const appModule = require('../packages/mcp-server/dist/cjs/index.cjs');
+      const appModule = require('../packages/mcp-server/dist/esm/index.js');
 
       // The module exports a Promise (from initializeOAuth().then(() => app))
       // We need to wait for it to resolve

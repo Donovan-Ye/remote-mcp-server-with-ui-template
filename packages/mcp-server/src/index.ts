@@ -13,13 +13,13 @@ import { checkResourceAllowed } from '@modelcontextprotocol/sdk/shared/auth-util
 import { OAuthMetadata } from '@modelcontextprotocol/sdk/shared/auth.js';
 import { InvalidTokenError } from '@modelcontextprotocol/sdk/server/auth/errors.js';
 import { CallToolResult, GetPromptResult, ReadResourceResult, ResourceLink, isInitializeRequest } from '@modelcontextprotocol/sdk/types.js';
-import toolsList from './tools/index.js';
-import { setupAuthServer } from './provider/oAuth2Provider/index.js';
-import { requestResponseLogger, winstonLogger } from './utils/logger.js';
-import { setupUiRouter } from './routers/ui.js';
-import { TokenVerifier } from './types.js';
+import toolsList from './tools';
+import { setupAuthServer } from './provider/oAuth2Provider';
+import { requestResponseLogger, winstonLogger } from './utils/logger';
+import { setupUiRouter } from './routers/ui';
+import { TokenVerifier } from './types';
 import { resolve } from 'path';
-import { setupApisRouter } from './routers/apis/index.js';
+import { setupApisRouter } from './routers/apis';
 
 const rootDir = resolve(process.cwd());
 dotenv.config({
