@@ -1,4 +1,4 @@
-// Vercel Serverless Function Entry Point
+// Vercel Serverless Function Entry Point (ESM)
 // Set VERCEL environment flag before importing anything
 process.env.VERCEL = '1';
 
@@ -9,13 +9,12 @@ async function getApp() {
   if (!appPromise) {
     console.log('Initializing Express app...');
     try {
-      // Import the module - it returns a Promise that resolves to the Express app
-      const appModule = require('../packages/mcp-server/dist/esm/index.js');
-
+      // Import the ESM module - it exports a Promise that resolves to the Express app
+      const appModule = await import('../packages/mcp-server/dist/esm/index.js');
+      
       // The module exports a Promise (from initializeOAuth().then(() => app))
-      // We need to wait for it to resolve
       appPromise = Promise.resolve(appModule.default || appModule);
-
+      
       const app = await appPromise;
       console.log('Express app initialized successfully');
       return app;
@@ -28,21 +27,21 @@ async function getApp() {
   return appPromise;
 }
 
-module.exports = async (req, res) => {
+export default async function handler(req, res) {
   try {
     const app = await getApp();
-
+    
     // Pass the request to Express
     app(req, res);
   } catch (error) {
     console.error('Error handling request:', error);
-
+    
     if (!res.headersSent) {
-      res.status(500).json({
+      res.status(500).json({ 
         error: 'Internal Server Error',
         message: process.env.NODE_ENV === 'development' ? error.message : undefined
       });
     }
   }
-};
+}
 
