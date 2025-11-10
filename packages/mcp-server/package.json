@@ -57,13 +57,13 @@
     "@rollup/plugin-json": "^6.0.0",
     "@rollup/plugin-node-resolve": "^15.0.0",
     "@rollup/plugin-typescript": "^11.0.0",
-    "rollup": "^4.0.0"
+    "rollup": "^4.0.0",
+    "glob": "^10.3.0"
   },
   "devDependencies": {
     "@types/cors": "^2.8.19",
     "@types/express": "^5.0.3",
     "@types/node": "^24.2.0",
-    "glob": "^10.3.0",
     "nodemon": "^3.1.10",
     "prisma": "^6.1.0",
     "tslib": "^2.8.1",

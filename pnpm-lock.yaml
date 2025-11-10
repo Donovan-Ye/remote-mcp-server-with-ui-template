@@ -65,6 +65,9 @@ importers:
       express:
         specifier: ^5.1.0
         version: 5.1.0
+      glob:
+        specifier: ^10.3.0
+        version: 10.4.5
       rollup:
         specifier: ^4.0.0
         version: 4.52.2
@@ -84,9 +87,6 @@ importers:
       '@types/node':
         specifier: ^24.2.0
         version: 24.5.2
-      glob:
-        specifier: ^10.3.0
-        version: 10.4.5
       nodemon:
         specifier: ^3.1.10
         version: 3.1.10
