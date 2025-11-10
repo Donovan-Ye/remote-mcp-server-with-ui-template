@@ -56,6 +56,9 @@ const baseConfig = {
     // 忽略一些常见的警告
     if (warning.code === 'CIRCULAR_DEPENDENCY') return;
     if (warning.code === 'UNRESOLVED_IMPORT') return;
+    // 忽略空 chunks 警告（类型定义文件会产生空 chunks，这是正常的）
+    if (warning.code === 'EMPTY_BUNDLE') return;
+    if (warning.message && warning.message.includes('empty chunks')) return;
     warn(warning);
   }
 };
@@ -70,7 +73,8 @@ export default [
         tsconfig: './tsconfig.esm.json',
         declaration: true,
         declarationDir: './dist/esm',
-        rootDir: './src'
+        rootDir: './src',
+        outputToFilesystem: true
       })
     ],
     output: {
@@ -93,7 +97,8 @@ export default [
         tsconfig: './tsconfig.cjs.json',
         declaration: true,
         declarationDir: './dist/cjs',
-        rootDir: './src'
+        rootDir: './src',
+        outputToFilesystem: true
       })
     ],
     output: {

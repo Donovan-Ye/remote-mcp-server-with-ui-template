@@ -1,6 +1,6 @@
 import dotenv from 'dotenv';
 
-import express, { Request, RequestHandler, Response } from 'express';
+import express, { Request, RequestHandler, Response as ExpressResponse } from 'express';
 import { randomUUID } from 'node:crypto';
 import { z } from 'zod';
 import cors from 'cors';
@@ -301,7 +301,7 @@ initializeOAuth().then(() => {
 	const transports: { [sessionId: string]: StreamableHTTPServerTransport } = {};
 
 	// MCP POST endpoint with optional auth
-	const mcpPostHandler = async (req: Request, res: Response) => {
+	const mcpPostHandler = async (req: Request, res: ExpressResponse) => {
 		const sessionId = req.headers['mcp-session-id'] as string | undefined;
 		if (sessionId) {
 			console.log(`Received MCP request for session: ${sessionId}`);
@@ -386,7 +386,7 @@ initializeOAuth().then(() => {
 	}
 
 	// Handle GET requests for SSE streams (using built-in support from StreamableHTTP)
-	const mcpGetHandler = async (req: Request, res: Response) => {
+	const mcpGetHandler = async (req: Request, res: ExpressResponse) => {
 		const sessionId = req.headers['mcp-session-id'] as string | undefined;
 		console.log('sessionId get', sessionId)
 		if (!sessionId || !transports[sessionId]) {
@@ -418,7 +418,7 @@ initializeOAuth().then(() => {
 	}
 
 	// Handle DELETE requests for session termination (according to MCP spec)
-	const mcpDeleteHandler = async (req: Request, res: Response) => {
+	const mcpDeleteHandler = async (req: Request, res: ExpressResponse) => {
 		const sessionId = req.headers['mcp-session-id'] as string | undefined;
 		if (!sessionId || !transports[sessionId]) {
 			res.status(400).send('Invalid or missing session ID');
