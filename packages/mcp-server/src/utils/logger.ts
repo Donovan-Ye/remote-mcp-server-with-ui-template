@@ -1,4 +1,4 @@
-import { Request, Response } from 'express';
+import { Request, Response, NextFunction } from 'express';
 import winston, { transports } from 'winston';
 
 // Custom format for file logs that preserves stack trace line breaks
@@ -77,8 +77,11 @@ export const requestResponseLogger = (req: Request, res: Response, next: Functio
   const startTime = Date.now();
   const requestId = Math.random().toString(36).substr(2, 9);
 
+  // Attach requestId for downstream middlewares/handlers
+  (req as any).requestId = requestId;
+
   // Log request
-  winstonLogger.info(`------------------------------ Incoming ${req.method} Request: ${req.url} ------------------------------\n'`, {
+  winstonLogger.info(`------------------------------ Incoming ${req.method} Request: ${req.url} ------------------------------`, {
     requestId,
     method: req.method,
     url: req.originalUrl,
@@ -136,20 +139,58 @@ export const requestResponseLogger = (req: Request, res: Response, next: Functio
     });
   }
 
-  // Listen for connection close (for SSE and long connections)
-  req.on('close', () => {
-    const duration = Date.now() - startTime;
-    winstonLogger.info('Connection Closed', {
-      requestId,
-      method: req.method,
-      url: req.originalUrl,
-      duration: `${duration}ms`,
-      sessionId: req.headers['mcp-session-id']
-    });
-  });
-
   next();
 };
+
+// Helper: extract first useful code location from an Error stack
+function extractCodeLocation(stack?: string): { file?: string; line?: number; column?: number } {
+  if (!stack) return {};
+  const lines = stack.split('\n').slice(1);
+  for (const line of lines) {
+    // Typical V8 stack line: "    at FunctionName (path/to/file.ts:123:45)"
+    const match = line.match(/\(([^)]+):(\d+):(\d+)\)$/) || line.match(/at ([^ ]+):(\d+):(\d+)$/);
+    if (match) {
+      const [, file, lineNum, colNum] = match;
+      // Prefer app code paths
+      if (!/node_modules/.test(file)) {
+        return { file, line: Number(lineNum), column: Number(colNum) };
+      }
+    }
+  }
+  return {};
+}
+
+// Error-logging middleware for Express
+export function errorLogger(err: any, req: Request, res: Response, _next: NextFunction) {
+  const requestId = (req as any).requestId;
+  const { file, line, column } = extractCodeLocation(err?.stack);
+  const meta: Record<string, unknown> = {
+    requestId,
+    method: req.method,
+    url: req.originalUrl,
+    statusCode: res.statusCode,
+    sessionId: req.headers['mcp-session-id'],
+    location: file ? { file, line, column } : undefined
+  };
+
+  // Use winston error with full stack
+  winstonLogger.error(err?.message || 'Unhandled error', {
+    ...meta,
+    stack: err?.stack,
+  });
+
+  // If headers not sent, send a generic error response while preserving existing behavior
+  if (!res.headersSent) {
+    res.status(res.statusCode >= 400 ? res.statusCode : 500).json({
+      jsonrpc: '2.0',
+      error: {
+        code: -32603,
+        message: 'Internal server error',
+      },
+      id: null,
+    });
+  }
+}
 
 // Export winston instance for use elsewhere
 export { winstonLogger };

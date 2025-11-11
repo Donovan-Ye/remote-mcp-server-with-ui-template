@@ -15,7 +15,7 @@ import { InvalidTokenError } from '@modelcontextprotocol/sdk/server/auth/errors.
 import { CallToolResult, GetPromptResult, ReadResourceResult, ResourceLink, isInitializeRequest } from '@modelcontextprotocol/sdk/types.js';
 import toolsList from './tools';
 import { setupAuthServer } from './provider/oAuth2Provider';
-import { requestResponseLogger, winstonLogger } from './utils/logger';
+import { requestResponseLogger, winstonLogger, errorLogger } from './utils/logger';
 import { setupUiRouter } from './routers/ui';
 import { TokenVerifier } from './types';
 import { resolve } from 'path';
@@ -444,6 +444,9 @@ initializeOAuth().then(() => {
 	} else {
 		app.delete('/mcp', mcpDeleteHandler);
 	}
+
+	// Centralized error logging (must be after routes)
+	app.use(errorLogger);
 
 	app.listen(MCP_PORT ?? 80, (error) => {
 		if (error) {
