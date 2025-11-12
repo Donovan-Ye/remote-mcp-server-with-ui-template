@@ -8,6 +8,16 @@ Example, or [try it out](https://better-chatbot-ten.vercel.app) directly:
   <video src="https://github.com/user-attachments/assets/29b25d51-f7b2-4d67-ada0-e42fab95fbfd" />
 </p>
 
+Or try to connect to it in Cursor (or other MCP clients) by adding the following to your Cursor config:
+
+```json
+{
+  "remote-mcp-server": {
+    "url": "https://www.yuanxiangji-mini.cn/mcp"
+  }
+}
+```
+
 ## What's MCP?
 
 MCP (Model Context Protocol) is an open-source standard for connecting AI applications to external systems.
