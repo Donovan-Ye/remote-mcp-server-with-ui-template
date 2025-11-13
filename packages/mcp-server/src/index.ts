@@ -190,7 +190,7 @@ if (isVercel) {
 
 // On Vercel, don't append port (uses default 80/443)
 // Only append port for local development
-const rootUrl = new URL(`${SERVER_URL}${MCP_PORT && !isVercel ? `:${MCP_PORT}` : ''}`);
+const rootUrl = `${SERVER_URL}${MCP_PORT && !isVercel ? `:${MCP_PORT}` : ''}`;
 export const mcpServerUrl = new URL(`${rootUrl}/mcp`);
 export const authServerUrl = new URL(`${rootUrl}`);
 export const uiServerUrl = new URL(`${rootUrl}/ui`);
