@@ -8,9 +8,7 @@ const isDev = process.env.NODE_ENV === 'development';
 
 const router = express.Router()
 
-const uiDistPath = isDev
-  ? path.join(process.cwd(), '../../', 'dist', 'ui')  // Monorepo root: ../../../../dist/ui
-  : path.join(process.cwd(), 'dist', 'ui')              // Docker: /app/dist/ui
+const uiDistPath = path.join(process.cwd(), '../../', 'dist', 'ui')  // Monorepo root: ../../../../dist/ui
 
 const uiIndexPath = path.join(uiDistPath, 'index.html');
 
